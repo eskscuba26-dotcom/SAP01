@@ -302,7 +302,7 @@ async def login(credentials: UserLogin):
 
 @api_router.get("/auth/me", response_model=User)
 async def get_me(current_user = Depends(get_current_user)):
-    user = await db.users.find_one({"id": current_user['user_id']}, {"_id": 0, "password": 0})
+    user = await db.users.find_one({"id": current_user['user_id']}, {"_id": 0, "password_hash": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     if isinstance(user['created_at'], str):
