@@ -535,6 +535,139 @@ async def get_consumptions(current_user = Depends(get_current_user)):
             cons['created_at'] = datetime.fromisoformat(cons['created_at'])
     return consumptions
 
+
+# Daily Consumption Routes
+@api_router.post("/daily-consumptions", response_model=DailyConsumption)
+async def create_daily_consumption(consumption_data: DailyConsumptionCreate, current_user = Depends(get_current_user)):
+    if current_user['role'] == 'viewer':
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    consumption_obj = DailyConsumption(
+        **consumption_data.model_dump(),
+        created_by=current_user['username']
+    )
+    
+    doc = consumption_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['date'] = doc['date'].isoformat()
+    await db.daily_consumptions.insert_one(doc)
+    
+    # Update material stocks
+    # Petkim + Fire için toplam stok düşürülmesi
+    await db.raw_materials.update_one(
+        {"name": "Petkim"},
+        {"$inc": {"current_stock": -consumption_data.total_petkim}}
+    )
+    
+    # Estol stoğunu düşür
+    await db.raw_materials.update_one(
+        {"name": "Estol"},
+        {"$inc": {"current_stock": -consumption_data.estol_quantity}}
+    )
+    
+    # Talk stoğunu düşür
+    await db.raw_materials.update_one(
+        {"name": "Talk"},
+        {"$inc": {"current_stock": -consumption_data.talk_quantity}}
+    )
+    
+    return consumption_obj
+
+@api_router.get("/daily-consumptions", response_model=List[DailyConsumption])
+async def get_daily_consumptions(current_user = Depends(get_current_user)):
+    consumptions = await db.daily_consumptions.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
+    for cons in consumptions:
+        if isinstance(cons['created_at'], str):
+            cons['created_at'] = datetime.fromisoformat(cons['created_at'])
+        if isinstance(cons['date'], str):
+            cons['date'] = datetime.fromisoformat(cons['date'])
+    return consumptions
+
+@api_router.put("/daily-consumptions/{consumption_id}", response_model=DailyConsumption)
+async def update_daily_consumption(consumption_id: str, consumption_data: DailyConsumptionCreate, current_user = Depends(get_current_user)):
+    if current_user['role'] not in ['admin', 'user']:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    existing = await db.daily_consumptions.find_one({"id": consumption_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Consumption not found")
+    
+    # Eski değerleri geri ekle (stok düzeltmesi için)
+    await db.raw_materials.update_one(
+        {"name": "Petkim"},
+        {"$inc": {"current_stock": existing['total_petkim']}}
+    )
+    await db.raw_materials.update_one(
+        {"name": "Estol"},
+        {"$inc": {"current_stock": existing['estol_quantity']}}
+    )
+    await db.raw_materials.update_one(
+        {"name": "Talk"},
+        {"$inc": {"current_stock": existing['talk_quantity']}}
+    )
+    
+    # Yeni değerleri düş
+    await db.raw_materials.update_one(
+        {"name": "Petkim"},
+        {"$inc": {"current_stock": -consumption_data.total_petkim}}
+    )
+    await db.raw_materials.update_one(
+        {"name": "Estol"},
+        {"$inc": {"current_stock": -consumption_data.estol_quantity}}
+    )
+    await db.raw_materials.update_one(
+        {"name": "Talk"},
+        {"$inc": {"current_stock": -consumption_data.talk_quantity}}
+    )
+    
+    updated_consumption = DailyConsumption(
+        id=consumption_id,
+        **consumption_data.model_dump(),
+        created_by=existing['created_by'],
+        created_at=datetime.fromisoformat(existing['created_at']) if isinstance(existing['created_at'], str) else existing['created_at']
+    )
+    
+    doc = updated_consumption.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['date'] = doc['date'].isoformat()
+    
+    await db.daily_consumptions.update_one(
+        {"id": consumption_id},
+        {"$set": doc}
+    )
+    
+    return updated_consumption
+
+@api_router.delete("/daily-consumptions/{consumption_id}")
+async def delete_daily_consumption(consumption_id: str, current_user = Depends(get_current_user)):
+    if current_user['role'] not in ['admin', 'user']:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    existing = await db.daily_consumptions.find_one({"id": consumption_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Consumption not found")
+    
+    # Stokları geri ekle
+    await db.raw_materials.update_one(
+        {"name": "Petkim"},
+        {"$inc": {"current_stock": existing['total_petkim']}}
+    )
+    await db.raw_materials.update_one(
+        {"name": "Estol"},
+        {"$inc": {"current_stock": existing['estol_quantity']}}
+    )
+    await db.raw_materials.update_one(
+        {"name": "Talk"},
+        {"$inc": {"current_stock": existing['talk_quantity']}}
+    )
+    
+    result = await db.daily_consumptions.delete_one({"id": consumption_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Consumption not found")
+    
+    return {"message": "Consumption deleted successfully"}
+
+
 # Shipment Routes
 @api_router.post("/shipments", response_model=Shipment)
 async def create_shipment(shipment_data: ShipmentCreate, current_user = Depends(get_current_user)):
