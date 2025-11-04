@@ -152,7 +152,24 @@ export default function Shipments({ user }) {
           <p className="text-gray-600">Ürün sevkiyatları ve teslimat kayıtları</p>
         </div>
         {canEdit && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) {
+              setEditingShipment(null);
+              setFormData({
+                shipment_date: '',
+                customer_company: '',
+                thickness_mm: '',
+                width_cm: '',
+                length_m: '',
+                color_material_id: '',
+                quantity: '',
+                invoice_number: '',
+                vehicle_plate: '',
+                driver_name: ''
+              });
+            }
+          }}>
             <DialogTrigger asChild>
               <Button data-testid="add-shipment-btn">
                 <Plus className="h-4 w-4 mr-2" />
@@ -161,7 +178,7 @@ export default function Shipments({ user }) {
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="add-shipment-dialog" aria-describedby="shipment-dialog-description">
               <DialogHeader>
-                <DialogTitle>Yeni Sevkiyat Kaydı</DialogTitle>
+                <DialogTitle>{editingShipment ? 'Sevkiyat Düzenle' : 'Yeni Sevkiyat Kaydı'}</DialogTitle>
                 <p id="shipment-dialog-description" className="sr-only">Sevkiyat bilgilerini girin</p>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
