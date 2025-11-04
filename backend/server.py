@@ -965,12 +965,13 @@ async def create_manufacturing_record(record_data: ManufacturingRecordCreate, cu
     await db.manufacturing_records.insert_one(doc)
     
     # Update masura stock if not "Masura Yok"
+    # Üretilen adet kadar masura stoğunu düş
     if record_data.masura_type != MasuraType.NO_MASURA:
         masura_material = await db.raw_materials.find_one({"name": record_data.masura_type})
-        if masura_material and masura_material['current_stock'] >= record_data.masura_quantity:
+        if masura_material and masura_material['current_stock'] >= record_data.quantity:
             await db.raw_materials.update_one(
                 {"id": masura_material['id']},
-                {"$inc": {"current_stock": -record_data.masura_quantity}}
+                {"$inc": {"current_stock": -record_data.quantity}}
             )
             
             # Create consumption record for masura
