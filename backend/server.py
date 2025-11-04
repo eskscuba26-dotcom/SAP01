@@ -682,6 +682,102 @@ async def delete_daily_consumption(consumption_id: str, current_user = Depends(g
     return {"message": "Consumption deleted successfully"}
 
 
+
+# Daily Gas Consumption Routes
+@api_router.post("/gas-consumption", response_model=DailyGasConsumption)
+async def create_gas_consumption(gas_data: DailyGasConsumptionCreate, current_user = Depends(get_current_user)):
+    if current_user['role'] == 'viewer':
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    gas_obj = DailyGasConsumption(
+        **gas_data.model_dump(),
+        created_by=current_user['username']
+    )
+    
+    doc = gas_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['date'] = doc['date'].isoformat()
+    await db.daily_gas_consumption.insert_one(doc)
+    
+    # Gaz stoğunu düşür
+    await db.raw_materials.update_one(
+        {"name": "Gaz"},
+        {"$inc": {"current_stock": -gas_data.total_gas_kg}}
+    )
+    
+    return gas_obj
+
+@api_router.get("/gas-consumption", response_model=List[DailyGasConsumption])
+async def get_gas_consumption(current_user = Depends(get_current_user)):
+    records = await db.daily_gas_consumption.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
+    for rec in records:
+        if isinstance(rec['created_at'], str):
+            rec['created_at'] = datetime.fromisoformat(rec['created_at'])
+        if isinstance(rec['date'], str):
+            rec['date'] = datetime.fromisoformat(rec['date'])
+    return records
+
+@api_router.put("/gas-consumption/{gas_id}", response_model=DailyGasConsumption)
+async def update_gas_consumption(gas_id: str, gas_data: DailyGasConsumptionCreate, current_user = Depends(get_current_user)):
+    if current_user['role'] not in ['admin', 'user']:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    existing = await db.daily_gas_consumption.find_one({"id": gas_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Gas consumption not found")
+    
+    # Eski değeri geri ekle
+    await db.raw_materials.update_one(
+        {"name": "Gaz"},
+        {"$inc": {"current_stock": existing['total_gas_kg']}}
+    )
+    
+    # Yeni değeri düş
+    await db.raw_materials.update_one(
+        {"name": "Gaz"},
+        {"$inc": {"current_stock": -gas_data.total_gas_kg}}
+    )
+    
+    updated_gas = DailyGasConsumption(
+        id=gas_id,
+        **gas_data.model_dump(),
+        created_by=existing['created_by'],
+        created_at=datetime.fromisoformat(existing['created_at']) if isinstance(existing['created_at'], str) else existing['created_at']
+    )
+    
+    doc = updated_gas.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['date'] = doc['date'].isoformat()
+    
+    await db.daily_gas_consumption.update_one(
+        {"id": gas_id},
+        {"$set": doc}
+    )
+    
+    return updated_gas
+
+@api_router.delete("/gas-consumption/{gas_id}")
+async def delete_gas_consumption(gas_id: str, current_user = Depends(get_current_user)):
+    if current_user['role'] not in ['admin', 'user']:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    existing = await db.daily_gas_consumption.find_one({"id": gas_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Gas consumption not found")
+    
+    # Stoğu geri ekle
+    await db.raw_materials.update_one(
+        {"name": "Gaz"},
+        {"$inc": {"current_stock": existing['total_gas_kg']}}
+    )
+    
+    result = await db.daily_gas_consumption.delete_one({"id": gas_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Gas consumption not found")
+    
+    return {"message": "Gas consumption deleted successfully"}
+
+
 # Shipment Routes
 @api_router.post("/shipments", response_model=Shipment)
 async def create_shipment(shipment_data: ShipmentCreate, current_user = Depends(get_current_user)):
