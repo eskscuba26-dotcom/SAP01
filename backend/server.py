@@ -196,6 +196,29 @@ class ConsumptionCreate(BaseModel):
     material_id: str
     quantity: float
 
+class DailyConsumption(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: datetime
+    machine: str  # "Makine 1" veya "Makine 2"
+    petkim_quantity: float
+    estol_quantity: float  # Petkim * 0.03
+    talk_quantity: float  # Petkim * 0.015
+    fire_quantity: float
+    total_petkim: float  # Petkim + Fire
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DailyConsumptionCreate(BaseModel):
+    date: datetime
+    machine: str
+    petkim_quantity: float
+    estol_quantity: float
+    talk_quantity: float
+    fire_quantity: float
+    total_petkim: float
+
+
 class Shipment(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
