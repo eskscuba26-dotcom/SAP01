@@ -8,20 +8,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 export default function Consumption({ user }) {
   const [consumptions, setConsumptions] = useState([]);
-  const [materials, setMaterials] = useState([]);
-  const [productionOrders, setProductionOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingConsumption, setEditingConsumption] = useState(null);
   const [formData, setFormData] = useState({
-    production_order_id: '',
-    material_id: '',
-    quantity: ''
+    date: '',
+    machine: 'Makine 1',
+    petkim_quantity: '',
+    fire_quantity: ''
   });
 
   const canEdit = user?.role !== 'viewer';
