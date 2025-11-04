@@ -9,9 +9,9 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import bcrypt
-import jwt
+from jose import jwt
 from enum import Enum
 
 ROOT_DIR = Path(__file__).parent
