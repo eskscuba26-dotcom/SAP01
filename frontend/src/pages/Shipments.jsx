@@ -62,7 +62,7 @@ export default function Shipments({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/shipments`, {
+      const payload = {
         ...formData,
         shipment_date: new Date(formData.shipment_date).toISOString(),
         thickness_mm: parseFloat(formData.thickness_mm),
@@ -70,9 +70,18 @@ export default function Shipments({ user }) {
         length_m: parseFloat(formData.length_m),
         quantity: parseInt(formData.quantity),
         color_material_id: formData.color_material_id || null
-      });
-      toast.success('Sevkiyat kaydı oluşturuldu');
+      };
+
+      if (editingShipment) {
+        await axios.put(`${API}/shipments/${editingShipment.id}`, payload);
+        toast.success('Sevkiyat kaydı güncellendi');
+      } else {
+        await axios.post(`${API}/shipments`, payload);
+        toast.success('Sevkiyat kaydı oluşturuldu');
+      }
+      
       setDialogOpen(false);
+      setEditingShipment(null);
       setFormData({
         shipment_date: '',
         customer_company: '',
@@ -89,6 +98,23 @@ export default function Shipments({ user }) {
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Hata oluştu');
     }
+  };
+
+  const handleEdit = (shipment) => {
+    setEditingShipment(shipment);
+    setFormData({
+      shipment_date: new Date(shipment.shipment_date).toISOString().slice(0, 16),
+      customer_company: shipment.customer_company || '',
+      thickness_mm: shipment.thickness_mm.toString(),
+      width_cm: shipment.width_cm.toString(),
+      length_m: shipment.length_m.toString(),
+      color_material_id: shipment.color_material_id || '',
+      quantity: shipment.quantity.toString(),
+      invoice_number: shipment.invoice_number || '',
+      vehicle_plate: shipment.vehicle_plate || '',
+      driver_name: shipment.driver_name || ''
+    });
+    setDialogOpen(true);
   };
 
   const handleDelete = async (shipmentId) => {
