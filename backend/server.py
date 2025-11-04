@@ -974,13 +974,13 @@ async def create_manufacturing_record(record_data: ManufacturingRecordCreate, cu
                 {"$inc": {"current_stock": -record_data.quantity}}
             )
             
-            # Create consumption record for masura
+            # Create consumption record for masura (üretilen adet kadar)
             consumption_doc = {
                 "id": str(uuid.uuid4()),
                 "production_order_id": record_obj.id,
                 "material_id": masura_material['id'],
                 "material_name": masura_material['name'],
-                "quantity": record_data.masura_quantity,
+                "quantity": record_data.quantity,
                 "created_by": current_user['username'],
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
