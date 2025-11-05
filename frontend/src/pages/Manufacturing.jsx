@@ -213,7 +213,7 @@ export default function Manufacturing({ user }) {
                     <Input
                       id="production_date"
                       data-testid="manufacturing-date"
-                      type="datetime-local"
+                      type="date"
                       value={formData.production_date}
                       onChange={(e) => setFormData({ ...formData, production_date: e.target.value })}
                       required
