@@ -286,8 +286,8 @@ export default function Manufacturing({ user }) {
                       onChange={(e) => {
                         const newQty = e.target.value;
                         // Adet değiştiğinde masura adedini de güncelle (eğer masura yok değilse)
-                        const masuraQty = formData.masura_type === "Masura Yok" ? "0" : newQty;
-                        setFormData({ ...formData, quantity: newQty, masura_quantity: masuraQty });
+                        const masuraQty = formData.masura_type === "Masura Yok" ? 0 : (parseInt(newQty) || 0);
+                        setFormData({ ...formData, quantity: newQty, masura_quantity: masuraQty.toString() });
                       }}
                       required
                     />
