@@ -923,6 +923,123 @@ async def update_material_entry(entry_id: str, entry_data: MaterialEntryCreate, 
     )
     
     # Hammadde bilgisini al
+
+
+# Cut Production Records (Kesilmiş Üretim Kayıtları)
+@api_router.post("/cut-production", response_model=CutProductionRecord)
+async def create_cut_production(cut_data: CutProductionCreate, current_user = Depends(get_current_user)):
+    if current_user['role'] == 'viewer':
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Ana malzeme bilgisini al (üretim kaydından)
+    source = await db.manufacturing_records.find_one({"id": cut_data.source_production_id})
+    if not source:
+        raise HTTPException(status_code=404, detail="Source production record not found")
+    
+    source_thickness = source['thickness_mm']
+    source_width = source['width_cm']
+    source_length = source['length_m']
+    
+    # Hesaplamalar
+    # 1. Ana malzemeden kaç adet çıkar (en ve boy yönünde)
+    pieces_width = source_width / cut_data.cut_width_cm
+    pieces_length = (source_length * 100) / cut_data.cut_length_cm  # m to cm
+    pieces_per_source = int(pieces_width * pieces_length)
+    
+    # 2. İstenilen adet için kaç ana malzeme gerekli
+    source_pieces_used = int((cut_data.requested_pieces / pieces_per_source) + 0.999)  # Yukarı yuvarla
+    
+    # 3. Toplam kesilmiş adet (fazlası çıkabilir)
+    total_cut_pieces = pieces_per_source * source_pieces_used
+    
+    # 4. Kesilmiş ürün metrekaresi
+    cut_length_m = cut_data.cut_length_cm / 100
+    cut_square_meters = (cut_data.cut_width_cm / 100) * cut_length_m * total_cut_pieces
+    
+    cut_record = CutProductionRecord(
+        **cut_data.model_dump(),
+        source_thickness_mm=source_thickness,
+        source_width_cm=source_width,
+        source_length_m=source_length,
+        pieces_per_source=pieces_per_source,
+        source_pieces_used=source_pieces_used,
+        total_cut_pieces=total_cut_pieces,
+        cut_square_meters=cut_square_meters,
+        created_by=current_user['username']
+    )
+    
+    doc = cut_record.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['date'] = doc['date'].isoformat()
+    await db.cut_production_records.insert_one(doc)
+    
+    # Stok güncellemesi - Ana malzeme stoğundan düş
+    # Üretim kaydındaki model formatını oluştur
+    source_model_key = f"{source_thickness}mm_{source_width}cm_{source_length}m"
+    
+    # Stock collection'da kesilmiş ürün ekle veya güncelle
+    cut_model_key = f"{source_thickness}mm_{cut_data.cut_width_cm}cm_{cut_length_m}m_kesik"
+    
+    existing_stock = await db.stock.find_one({"model_key": cut_model_key})
+    if existing_stock:
+        await db.stock.update_one(
+            {"model_key": cut_model_key},
+            {"$inc": {"quantity": total_cut_pieces, "square_meters": cut_square_meters}}
+        )
+    else:
+        stock_doc = {
+            "id": str(uuid.uuid4()),
+            "model_key": cut_model_key,
+            "thickness_mm": source_thickness,
+            "width_cm": cut_data.cut_width_cm,
+            "length_m": cut_length_m,
+            "quantity": total_cut_pieces,
+            "square_meters": cut_square_meters,
+            "type": "Kesilmiş",
+            "color": cut_data.color,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.stock.insert_one(stock_doc)
+    
+    return cut_record
+
+@api_router.get("/cut-production", response_model=List[CutProductionRecord])
+async def get_cut_production(current_user = Depends(get_current_user)):
+    records = await db.cut_production_records.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
+    for rec in records:
+        if isinstance(rec['created_at'], str):
+            rec['created_at'] = datetime.fromisoformat(rec['created_at'])
+        if isinstance(rec['date'], str):
+            rec['date'] = datetime.fromisoformat(rec['date'])
+    return records
+
+@api_router.delete("/cut-production/{record_id}")
+async def delete_cut_production(record_id: str, current_user = Depends(get_current_user)):
+    if current_user['role'] not in ['admin', 'user']:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    existing = await db.cut_production_records.find_one({"id": record_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Cut production record not found")
+    
+    # Stoğu geri düşür
+    cut_length_m = existing['cut_length_cm'] / 100
+    cut_model_key = f"{existing['source_thickness_mm']}mm_{existing['cut_width_cm']}cm_{cut_length_m}m_kesik"
+    
+    await db.stock.update_one(
+        {"model_key": cut_model_key},
+        {"$inc": {
+            "quantity": -existing['total_cut_pieces'],
+            "square_meters": -existing['cut_square_meters']
+        }}
+    )
+    
+    result = await db.cut_production_records.delete_one({"id": record_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Cut production record not found")
+    
+    return {"message": "Cut production record deleted successfully"}
+
     material = await db.raw_materials.find_one({"id": entry_data.material_id})
     
     updated_entry = MaterialEntry(
