@@ -15,6 +15,7 @@ import Stock from "@/pages/Stock";
 import Shipments from "@/pages/Shipments";
 import Consumption from "@/pages/Consumption";
 import GasConsumption from "@/pages/GasConsumption";
+import MaterialEntries from "@/pages/MaterialEntries";
 import CostAnalysis from "@/pages/CostAnalysis";
 import Users from "@/pages/Users";
 
