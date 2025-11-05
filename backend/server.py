@@ -805,6 +805,112 @@ async def delete_gas_consumption(gas_id: str, current_user = Depends(get_current
     return {"message": "Gas consumption deleted successfully"}
 
 
+# Material Entry Routes (Hammadde Giriş Kayıtları)
+@api_router.post("/material-entries", response_model=MaterialEntry)
+async def create_material_entry(entry_data: MaterialEntryCreate, current_user = Depends(get_current_user)):
+    if current_user['role'] == 'viewer':
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Hammadde bilgisini al
+    material = await db.raw_materials.find_one({"id": entry_data.material_id})
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+    
+    entry_obj = MaterialEntry(
+        **entry_data.model_dump(),
+        material_name=material['name'],
+        created_by=current_user['username']
+    )
+    
+    doc = entry_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['entry_date'] = doc['entry_date'].isoformat()
+    await db.material_entries.insert_one(doc)
+    
+    # Stoğu artır
+    await db.raw_materials.update_one(
+        {"id": entry_data.material_id},
+        {"$inc": {"current_stock": entry_data.quantity}}
+    )
+    
+    return entry_obj
+
+@api_router.get("/material-entries", response_model=List[MaterialEntry])
+async def get_material_entries(current_user = Depends(get_current_user)):
+    entries = await db.material_entries.find({}, {"_id": 0}).sort("entry_date", -1).to_list(1000)
+    for entry in entries:
+        if isinstance(entry['created_at'], str):
+            entry['created_at'] = datetime.fromisoformat(entry['created_at'])
+        if isinstance(entry['entry_date'], str):
+            entry['entry_date'] = datetime.fromisoformat(entry['entry_date'])
+    return entries
+
+@api_router.put("/material-entries/{entry_id}", response_model=MaterialEntry)
+async def update_material_entry(entry_id: str, entry_data: MaterialEntryCreate, current_user = Depends(get_current_user)):
+    if current_user['role'] not in ['admin', 'user']:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    existing = await db.material_entries.find_one({"id": entry_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Material entry not found")
+    
+    # Eski miktarı geri al
+    await db.raw_materials.update_one(
+        {"id": existing['material_id']},
+        {"$inc": {"current_stock": -existing['quantity']}}
+    )
+    
+    # Yeni miktarı ekle
+    await db.raw_materials.update_one(
+        {"id": entry_data.material_id},
+        {"$inc": {"current_stock": entry_data.quantity}}
+    )
+    
+    # Hammadde bilgisini al
+    material = await db.raw_materials.find_one({"id": entry_data.material_id})
+    
+    updated_entry = MaterialEntry(
+        id=entry_id,
+        **entry_data.model_dump(),
+        material_name=material['name'],
+        created_by=existing['created_by'],
+        created_at=datetime.fromisoformat(existing['created_at']) if isinstance(existing['created_at'], str) else existing['created_at']
+    )
+    
+    doc = updated_entry.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['entry_date'] = doc['entry_date'].isoformat()
+    
+    await db.material_entries.update_one(
+        {"id": entry_id},
+        {"$set": doc}
+    )
+    
+    return updated_entry
+
+@api_router.delete("/material-entries/{entry_id}")
+async def delete_material_entry(entry_id: str, current_user = Depends(get_current_user)):
+    if current_user['role'] not in ['admin', 'user']:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    existing = await db.material_entries.find_one({"id": entry_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Material entry not found")
+    
+    # Stoğu geri düş (girişi iptal et)
+    await db.raw_materials.update_one(
+        {"id": existing['material_id']},
+        {"$inc": {"current_stock": -existing['quantity']}}
+    )
+    
+    result = await db.material_entries.delete_one({"id": entry_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Material entry not found")
+    
+    return {"message": "Material entry deleted successfully"}
+
+
+
 # Shipment Routes
 @api_router.post("/shipments", response_model=Shipment)
 async def create_shipment(shipment_data: ShipmentCreate, current_user = Depends(get_current_user)):
