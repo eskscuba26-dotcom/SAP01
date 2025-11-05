@@ -608,8 +608,12 @@ async def create_daily_consumption(consumption_data: DailyConsumptionCreate, cur
     if current_user['role'] == 'viewer':
         raise HTTPException(status_code=403, detail="Permission denied")
     
+    # Calculate total_petkim
+    total_petkim = consumption_data.petkim_quantity + consumption_data.fire_quantity
+    
     consumption_obj = DailyConsumption(
         **consumption_data.model_dump(),
+        total_petkim=total_petkim,
         created_by=current_user['username']
     )
     
@@ -622,7 +626,7 @@ async def create_daily_consumption(consumption_data: DailyConsumptionCreate, cur
     # Petkim + Fire için toplam stok düşürülmesi
     await db.raw_materials.update_one(
         {"name": "Petkim"},
-        {"$inc": {"current_stock": -consumption_data.total_petkim}}
+        {"$inc": {"current_stock": -total_petkim}}
     )
     
     # Estol stoğunu düşür
