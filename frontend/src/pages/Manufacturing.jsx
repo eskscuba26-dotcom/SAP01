@@ -312,8 +312,8 @@ export default function Manufacturing({ user }) {
                       value={formData.masura_type} 
                       onValueChange={(value) => {
                         // Masura seçildiğinde, masura adedini otomatik adet alanından al
-                        const masuraQty = value === "Masura Yok" ? "0" : formData.quantity || "0";
-                        setFormData({ ...formData, masura_type: value, masura_quantity: masuraQty });
+                        const masuraQty = value === "Masura Yok" ? 0 : (formData.quantity || 0);
+                        setFormData({ ...formData, masura_type: value, masura_quantity: masuraQty.toString() });
                       }}
                     >
                       <SelectTrigger id="masura_type" data-testid="manufacturing-masura-type">
