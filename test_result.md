@@ -297,6 +297,8 @@ agent_communication:
     message: "Cut Production page comprehensive test completed successfully. All user requirements verified: date field type='date' (no time), dropdown functionality with 30 production records, no JavaScript errors, automatic calculations working (30 pieces per source, 2 sources needed), form submission successful with new record creation. Page is fully functional."
   - agent: "testing"
     message: "Manufacturing Records page testing completed successfully per user requirements. All critical functionality verified: ✅ Date field type='date' (no time) ✅ Masura Adedi automatic and readonly ✅ No Gaz Payı field ✅ Form submission working ✅ Record creation successful. Minor issue: Masura Yok selection behavior but core functionality perfect."
+  - agent: "testing"
+    message: "Consumption page comprehensive test completed successfully per user requirements. ALL CRITICAL CONTROLS VERIFIED: ✅ Admin login (admin/admin123) working ✅ Page loaded with 20+ consumption records ✅ Date field type='date' (NO TIME FIELD) ✅ Form fields working (Petkim: 1000kg, Fire: 300kg) ✅ Automatic calculations PERFECT: Estol: 39.00kg (1300*0.03), Talk: 19.50kg (1300*0.015), Total: 1300.00kg ✅ Form submission successful ✅ Success message displayed ✅ New record added to table (21 total) ✅ No console errors. Page is fully functional and meets all requirements."
 
 user_problem_statement: "SAP01 Üretim Yönetim Sistemi Backend Testi - Test all backend API endpoints for the production management system including authentication, raw materials, manufacturing, consumptions, shipments, stock, and cost analysis."
 
