@@ -60,9 +60,9 @@ export default function Manufacturing({ user }) {
   };
 
   const handleEdit = (record) => {
-    // Format date for datetime-local input
+    // Format date for date input (YYYY-MM-DD)
     const date = new Date(record.production_date);
-    const formattedDate = date.toISOString().slice(0, 16);
+    const formattedDate = date.toISOString().slice(0, 10);
     
     setEditingRecord(record);
     setFormData({
@@ -74,8 +74,7 @@ export default function Manufacturing({ user }) {
       quantity: record.quantity.toString(),
       masura_type: record.masura_type,
       masura_quantity: record.masura_quantity.toString(),
-      color_material_id: record.color_material_id || '',
-      gas_consumption_kg: record.gas_consumption_kg.toString()
+      color_material_id: record.color_material_id || ''
     });
     setDialogOpen(true);
   };
