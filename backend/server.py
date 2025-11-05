@@ -843,6 +843,17 @@ async def get_material_entries(current_user = Depends(get_current_user)):
             entry['created_at'] = datetime.fromisoformat(entry['created_at'])
         if isinstance(entry['entry_date'], str):
             entry['entry_date'] = datetime.fromisoformat(entry['entry_date'])
+        
+        # Eğer material_id yoksa, material_name'den bul ve ekle
+        if not entry.get('material_id') and entry.get('material_name'):
+            material = await db.raw_materials.find_one({"name": entry['material_name']})
+            if material:
+                entry['material_id'] = material['id']
+                # Veritabanını da güncelle
+                await db.material_entries.update_one(
+                    {"id": entry['id']},
+                    {"$set": {"material_id": material['id']}}
+                )
     return entries
 
 @api_router.put("/material-entries/{entry_id}", response_model=MaterialEntry)
