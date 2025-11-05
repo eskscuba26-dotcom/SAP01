@@ -14,7 +14,8 @@ import {
   ShoppingCart,
   Boxes,
   Flame,
-  PackagePlus
+  PackagePlus,
+  Scissors
 } from 'lucide-react';
 
 export default function DashboardLayout({ children, user }) {
