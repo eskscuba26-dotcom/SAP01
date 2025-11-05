@@ -838,6 +838,8 @@ async def create_material_entry(entry_data: MaterialEntryCreate, current_user = 
 @api_router.get("/material-entries", response_model=List[MaterialEntry])
 async def get_material_entries(current_user = Depends(get_current_user)):
     entries = await db.material_entries.find({}, {"_id": 0}).sort("entry_date", -1).to_list(1000)
+    
+    valid_entries = []
     for entry in entries:
         if isinstance(entry['created_at'], str):
             entry['created_at'] = datetime.fromisoformat(entry['created_at'])
@@ -854,7 +856,25 @@ async def get_material_entries(current_user = Depends(get_current_user)):
                     {"id": entry['id']},
                     {"$set": {"material_id": material['id']}}
                 )
-    return entries
+        
+        # Sadece MaterialEntry model'ine uygun alanları al
+        valid_entry = {
+            'id': entry['id'],
+            'entry_date': entry['entry_date'],
+            'material_id': entry['material_id'],
+            'material_name': entry['material_name'],
+            'quantity': entry['quantity'],
+            'currency': entry['currency'],
+            'unit_price': entry['unit_price'],
+            'total_amount': entry['total_amount'],
+            'supplier': entry.get('supplier'),
+            'invoice_number': entry.get('invoice_number'),
+            'created_by': entry['created_by'],
+            'created_at': entry['created_at']
+        }
+        valid_entries.append(valid_entry)
+    
+    return valid_entries
 
 @api_router.put("/material-entries/{entry_id}", response_model=MaterialEntry)
 async def update_material_entry(entry_id: str, entry_data: MaterialEntryCreate, current_user = Depends(get_current_user)):
