@@ -350,19 +350,6 @@ export default function Manufacturing({ user }) {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="gas_consumption">Gaz Payı (kg)</Label>
-                  <Input
-                    id="gas_consumption"
-                    data-testid="manufacturing-gas"
-                    type="number"
-                    step="0.01"
-                    value={formData.gas_consumption_kg}
-                    onChange={(e) => setFormData({ ...formData, gas_consumption_kg: e.target.value })}
-                    required
-                  />
-                </div>
-
                 <div className="p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm font-medium text-blue-900">Model: {formData.thickness_mm && formData.width_cm && formData.length_m ? `${formData.thickness_mm} mm x ${formData.width_cm} cm x ${formData.length_m} m` : 'Değerler girilince otomatik oluşacak'}</p>
                 </div>
