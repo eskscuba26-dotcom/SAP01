@@ -264,6 +264,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "Comprehensive test completed: ✅ Admin login (admin/admin123) working ✅ Date input type='date' correct (no time field) ✅ Ana Malzeme dropdown opens with 30 production records ✅ No JavaScript errors on material selection ✅ Form fields accept input correctly (50cm width, 100cm length, 50 pieces) ✅ Automatic calculations display properly (30 pieces per source, 2 sources needed, 60 total pieces, 30m²) ✅ Form submission successful ✅ Dialog closes after submission ✅ New record appears in table (2 total records) ✅ No console errors or page errors detected"
+      - working: true
+        agent: "testing"
+        comment: "CRITICAL ResizeObserver Error Test Completed: ✅ Admin login (admin/admin123) SUCCESSFUL ✅ /cut-production page LOADED ✅ Yeni Kesim Kaydı dialog OPENED ✅ Date field (2025-01-15) FILLED ✅ Ana Malzeme dropdown OPENS SUCCESSFULLY ✅ 33 production records VISIBLE in dropdown ✅ Material selection WORKING (2mm x 150cm x 300m selected) ✅ Form fields filled (En: 50cm, Boy: 100cm, Adet: 50) ✅ Automatic calculations DISPLAYED correctly ✅ Form submission SUCCESSFUL ✅ Success message 'Kesilmiş üretim kaydı oluşturuldu' SHOWN ✅ New record added to table ✅ ResizeObserver error: NOT FOUND ✅ Console errors: NONE (only minor warnings) ✅ ALL CRITICAL FUNCTIONALITY WORKING PERFECTLY"
 
   - task: "Manufacturing Records Page"
     implemented: true
