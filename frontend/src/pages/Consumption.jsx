@@ -163,7 +163,7 @@ export default function Consumption({ user }) {
                     <Input
                       id="date"
                       data-testid="consumption-date"
-                      type="datetime-local"
+                      type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                       required
