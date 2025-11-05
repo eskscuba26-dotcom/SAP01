@@ -101,7 +101,7 @@ export default function Consumption({ user }) {
   const handleEdit = (consumption) => {
     setEditingConsumption(consumption);
     setFormData({
-      date: new Date(consumption.date).toISOString().slice(0, 16),
+      date: new Date(consumption.date).toISOString().slice(0, 10),
       machine: consumption.machine,
       petkim_quantity: consumption.petkim_quantity.toString(),
       fire_quantity: consumption.fire_quantity.toString()
