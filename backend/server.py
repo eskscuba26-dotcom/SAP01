@@ -256,6 +256,35 @@ class MaterialEntryCreate(BaseModel):
     invoice_number: Optional[str] = None
 
 
+
+
+class CutProductionRecord(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: datetime
+    source_production_id: str  # Ana malzeme (üretim kaydından)
+    source_thickness_mm: float  # Ana kalınlık
+    source_width_cm: float  # Ana en
+    source_length_m: float  # Ana boy
+    cut_width_cm: float  # Kesilmiş en
+    cut_length_cm: float  # Kesilmiş boy (cm cinsinden)
+    pieces_per_source: float  # 1 ana malzemeden kaç adet çıkar
+    requested_pieces: int  # İstenilen adet
+    source_pieces_used: int  # Kullanılan ana malzeme adedi
+    total_cut_pieces: int  # Toplam kesilmiş adet
+    cut_square_meters: float  # Kesilmiş ürün m²
+    color: Optional[str] = None
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CutProductionCreate(BaseModel):
+    date: datetime
+    source_production_id: str
+    cut_width_cm: float
+    cut_length_cm: float
+    requested_pieces: int
+    color: Optional[str] = None
+
 class Shipment(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
