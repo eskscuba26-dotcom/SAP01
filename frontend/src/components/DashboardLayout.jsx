@@ -30,8 +30,9 @@ export default function DashboardLayout({ children, user }) {
 
   const menuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Gösterge Paneli' },
-    { path: '/raw-materials', icon: Boxes, label: 'Hammaddeler' },
-    { path: '/products', icon: Package, label: 'Ürünler' },
+    { path: '/raw-materials', icon: Package, label: 'Hammaddeler' },
+    { path: '/material-entries', icon: PackagePlus, label: 'Hammadde Girişleri' },
+    { path: '/products', icon: Boxes, label: 'Ürünler' },
     { path: '/production', icon: Factory, label: 'Üretim Emirleri' },
     { path: '/manufacturing', icon: Factory, label: 'Üretim Kayıtları' },
     { path: '/stock', icon: Package, label: 'Stok Durumu' },
