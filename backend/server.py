@@ -228,6 +228,33 @@ class DailyGasConsumption(BaseModel):
 
 class DailyGasConsumptionCreate(BaseModel):
     date: datetime
+
+
+class MaterialEntry(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    entry_date: datetime
+    material_id: str
+    material_name: str
+    quantity: float
+    currency: str  # TL, USD, EUR
+    unit_price: float
+    total_amount: float
+    supplier: Optional[str] = None
+    invoice_number: Optional[str] = None
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class MaterialEntryCreate(BaseModel):
+    entry_date: datetime
+    material_id: str
+    quantity: float
+    currency: str
+    unit_price: float
+    total_amount: float
+    supplier: Optional[str] = None
+    invoice_number: Optional[str] = None
+
     total_gas_kg: float
 
     total_petkim: float  # Frontend hesaplayıp gönderiyor
