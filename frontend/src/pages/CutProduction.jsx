@@ -105,8 +105,12 @@ export default function CutProduction({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Tarih için sadece gün/ay/yıl kullan (saat 00:00:00)
+      const dateObj = new Date(formData.date);
+      dateObj.setHours(0, 0, 0, 0);
+      
       const payload = {
-        date: new Date(formData.date).toISOString(),
+        date: dateObj.toISOString(),
         source_production_id: formData.source_production_id,
         cut_width_cm: parseFloat(formData.cut_width_cm),
         cut_length_cm: parseFloat(formData.cut_length_cm),
