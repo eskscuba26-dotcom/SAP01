@@ -297,7 +297,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Manufacturing Records page testing completed successfully"
+    - "Consumption page testing completed successfully"
     - "All user-requested functionality verified and working"
   stuck_tasks: []
   test_all: false
