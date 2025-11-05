@@ -83,14 +83,21 @@ export default function Manufacturing({ user }) {
     e.preventDefault();
     
     try {
+      // Tarih için sadece gün/ay/yıl kullan (saat 00:00:00)
+      const dateObj = new Date(formData.production_date);
+      dateObj.setHours(0, 0, 0, 0);
+      
+      // Gaz tüketimini otomatik hesapla (adet * 0.5 kg)
+      const gasConsumption = parseInt(formData.quantity) * 0.5;
+      
       const payload = {
-        production_date: new Date(formData.production_date).toISOString(),
+        production_date: dateObj.toISOString(),
         thickness_mm: parseFloat(formData.thickness_mm),
         width_cm: parseFloat(formData.width_cm),
         length_m: parseFloat(formData.length_m),
         quantity: parseInt(formData.quantity),
         masura_quantity: parseInt(formData.masura_quantity),
-        gas_consumption_kg: parseFloat(formData.gas_consumption_kg),
+        gas_consumption_kg: gasConsumption,
         machine: formData.machine,
         masura_type: formData.masura_type,
         color_material_id: formData.color_material_id && formData.color_material_id !== 'none' ? formData.color_material_id : null
