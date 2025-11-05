@@ -300,7 +300,14 @@ export default function Manufacturing({ user }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="masura_type">Masura Tipi</Label>
-                    <Select value={formData.masura_type} onValueChange={(value) => setFormData({ ...formData, masura_type: value })}>
+                    <Select 
+                      value={formData.masura_type} 
+                      onValueChange={(value) => {
+                        // Masura seçildiğinde, masura adedini otomatik adet alanından al
+                        const masuraQty = value === "Masura Yok" ? "0" : formData.quantity || "0";
+                        setFormData({ ...formData, masura_type: value, masura_quantity: masuraQty });
+                      }}
+                    >
                       <SelectTrigger id="masura_type" data-testid="manufacturing-masura-type">
                         <SelectValue />
                       </SelectTrigger>
@@ -314,14 +321,14 @@ export default function Manufacturing({ user }) {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="masura_quantity">Masura Adedi</Label>
+                    <Label htmlFor="masura_quantity">Masura Adedi (Otomatik)</Label>
                     <Input
                       id="masura_quantity"
                       data-testid="manufacturing-masura-quantity"
                       type="number"
                       value={formData.masura_quantity}
-                      onChange={(e) => setFormData({ ...formData, masura_quantity: e.target.value })}
-                      required
+                      readOnly
+                      className="bg-gray-50"
                     />
                   </div>
                 </div>
