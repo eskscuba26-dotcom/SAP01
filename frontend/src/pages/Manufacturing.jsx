@@ -125,8 +125,7 @@ export default function Manufacturing({ user }) {
         quantity: '',
         masura_type: 'Masura 100',
         masura_quantity: '',
-        color_material_id: '',
-        gas_consumption_kg: ''
+        color_material_id: ''
       });
       
       // Biraz bekle sonra kayıtları yükle
