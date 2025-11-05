@@ -36,6 +36,7 @@ export default function DashboardLayout({ children, user }) {
     { path: '/products', icon: Boxes, label: 'Ürünler' },
     { path: '/production', icon: Factory, label: 'Üretim Emirleri' },
     { path: '/manufacturing', icon: Factory, label: 'Üretim Kayıtları' },
+    { path: '/cut-production', icon: Scissors, label: 'Kesilmiş Üretim' },
     { path: '/stock', icon: Package, label: 'Stok Durumu' },
     { path: '/consumption', icon: ShoppingCart, label: 'Tüketim' },
     { path: '/gas-consumption', icon: Flame, label: 'Gaz Tüketimi' },
