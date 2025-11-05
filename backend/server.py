@@ -676,10 +676,13 @@ async def update_daily_consumption(consumption_id: str, consumption_data: DailyC
         {"$inc": {"current_stock": existing['talk_quantity']}}
     )
     
+    # Calculate new total_petkim
+    new_total_petkim = consumption_data.petkim_quantity + consumption_data.fire_quantity
+    
     # Yeni değerleri düş
     await db.raw_materials.update_one(
         {"name": "Petkim"},
-        {"$inc": {"current_stock": -consumption_data.total_petkim}}
+        {"$inc": {"current_stock": -new_total_petkim}}
     )
     await db.raw_materials.update_one(
         {"name": "Estol"},
@@ -693,6 +696,7 @@ async def update_daily_consumption(consumption_id: str, consumption_data: DailyC
     updated_consumption = DailyConsumption(
         id=consumption_id,
         **consumption_data.model_dump(),
+        total_petkim=new_total_petkim,
         created_by=existing['created_by'],
         created_at=datetime.fromisoformat(existing['created_at']) if isinstance(existing['created_at'], str) else existing['created_at']
     )
