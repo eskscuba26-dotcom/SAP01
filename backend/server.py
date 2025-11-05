@@ -228,6 +228,7 @@ class DailyGasConsumption(BaseModel):
 
 class DailyGasConsumptionCreate(BaseModel):
     date: datetime
+    total_gas_kg: float
 
 
 class MaterialEntry(BaseModel):
