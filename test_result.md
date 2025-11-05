@@ -277,6 +277,18 @@ frontend:
         agent: "testing"
         comment: "Comprehensive test completed per user requirements: ✅ Date field type='date' (no time field) ✅ Form fields working (Date: 2024-01-15, Machine: Makine 1, Thickness: 3mm, Width: 150cm, Length: 10m, Quantity: 100) ✅ Masura Adedi automatically set to 100 and readonly ✅ Masura Adedi updates automatically when quantity changes (tested 50→50) ✅ No 'Gaz Payı' field found (correctly removed) ✅ Form submission successful without color selection ✅ Success toast message displayed ✅ New record appears in table (31 total records) ✅ No console errors detected. Minor: Masura Yok selection didn't reset to 0 but core functionality works perfectly."
 
+  - task: "Consumption Page"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/Consumption.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Comprehensive test completed per user requirements: ✅ Admin login (admin/admin123) successful ✅ Page navigation to /consumption working ✅ Records loaded: 20 consumption records (meets requirement) ✅ Date field type='date' verified (NO TIME FIELD) ✅ Add button 'Tüketim Kaydı Ekle' working ✅ Form fields functional: Petkim (1000kg), Fire (300kg), Machine selection ✅ Automatic calculations PERFECT: Estol: 39.00kg (1300*0.03), Talk: 19.50kg (1300*0.015), Total Petkim: 1300.00kg ✅ Form submission successful ✅ Success message 'Tüketim kaydı oluşturuldu' displayed ✅ New record added to table (21 total) ✅ No console errors detected. ALL CRITICAL CONTROLS VERIFIED SUCCESSFULLY."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
