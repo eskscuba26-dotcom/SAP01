@@ -191,7 +191,7 @@ export default function CutProduction({ user }) {
                     <Label htmlFor="date">Tarih</Label>
                     <Input
                       id="date"
-                      type="datetime-local"
+                      type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                       required
