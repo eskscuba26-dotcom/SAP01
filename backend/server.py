@@ -255,8 +255,6 @@ class MaterialEntryCreate(BaseModel):
     supplier: Optional[str] = None
     invoice_number: Optional[str] = None
 
-    total_gas_kg: float
-
     total_petkim: float  # Frontend hesaplayıp gönderiyor
 
 
