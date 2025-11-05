@@ -66,8 +66,12 @@ export default function Consumption({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Tarih için sadece gün/ay/yıl kullan (saat 00:00:00)
+      const dateObj = new Date(formData.date);
+      dateObj.setHours(0, 0, 0, 0);
+      
       const payload = {
-        date: new Date(formData.date).toISOString(),
+        date: dateObj.toISOString(),
         machine: formData.machine,
         petkim_quantity: parseFloat(formData.petkim_quantity),
         estol_quantity: parseFloat(calculateEstol()),
